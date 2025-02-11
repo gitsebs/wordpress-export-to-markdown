@@ -5,13 +5,14 @@
 exports.frontmatter_fields = [
 	'title',
 	'slug',
-	'featuredImage',
+	// 'featuredImage',
+	'coverImage',
 	'excerpt',
 	'categories',
 	'metatitle',
 	'metadescription',
 	'date',
-	'thumbnail',
+	// 'thumbnail',
 ];
 
 // Time in ms to wait between requesting image files. Increase this if you see timeouts or
