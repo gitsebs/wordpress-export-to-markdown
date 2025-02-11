@@ -122,6 +122,9 @@ async function writeImageFilesPromise(posts, config) {
 					destinationPath,
 					delay
 				};
+				if (payload.item.startsWith('https://hollowaystorage.com.au')) {
+					payload.item = payload.item.replace('https://hollowaystorage.com.au', 'https://wp1.hollowaystorage.com.au');
+				}
 				delay += settings.image_file_request_delay;
 				return [payload];
 			}
