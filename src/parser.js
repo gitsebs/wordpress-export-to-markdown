@@ -30,7 +30,7 @@ async function parseFilePromise(config) {
 	}
 
 	mergeImagesIntoPosts(images, posts);
-	populateFrontmatter(posts);
+	await populateFrontmatter(posts);
 
 	return posts;
 }
@@ -172,10 +172,10 @@ function mergeImagesIntoPosts(images, posts) {
 	});
 }
 
-function populateFrontmatter(posts) {
-	posts.forEach(post => {
+async function populateFrontmatter(posts) {
+	for await (const post of posts) {
 		const frontmatter = {};
-		settings.frontmatter_fields.forEach(field => {
+		for (const field of settings.frontmatter_fields) {
 			const [key, alias] = field.split(':');
 
 			let frontmatterGetter = frontmatterGetters[key];
@@ -183,10 +183,10 @@ function populateFrontmatter(posts) {
 				throw `Could not find a frontmatter getter named "${key}".`;
 			}
 
-			frontmatter[alias || key] = frontmatterGetter(post);
-		});
+			frontmatter[alias || key] = await frontmatterGetter(post);
+		}
 		post.frontmatter = frontmatter;
-	});
+	}
 }
 
 exports.parseFilePromise = parseFilePromise;

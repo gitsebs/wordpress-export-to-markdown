@@ -1,3 +1,4 @@
+const utils = require('../utils');
 // {
 // 	id: '1676',
 // 	slug: 'tips-packing-fragile-dangerous-items-move',
@@ -10,11 +11,7 @@
 // 	]
 // }
 
-module.exports = async (post) => {
-	const url = `https://wp1.hollowaystorage.com.au/wp-json/wp/v2/media/?include=1661`;
-	const response = await fetch(url);
-	console.log(response.status);
-	const data = await response.json();
 
-	return data[0].link;
+module.exports = async (post) => {  
+  return await utils.getPostThumbnailUrl(post);
 };

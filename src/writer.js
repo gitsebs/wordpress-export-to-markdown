@@ -8,6 +8,7 @@ const path = require('path');
 
 const shared = require('./shared');
 const settings = require('./settings');
+const utils = require('./utils');
 
 async function writeFilesPromise(posts, config) {
 	await writeMarkdownFilesPromise(posts, config);
@@ -86,7 +87,7 @@ async function loadMarkdownFilePromise(post) {
 			}
 		} else {
 			// single string value
-			const escapedValue = (value || '').replace(/"/g, '\\"');
+			const escapedValue = (String(value) || '').replace(/"/g, '\\"');
 			if (escapedValue.length > 0) {
 				outputValue = `"${escapedValue}"`;
 			}
@@ -105,10 +106,10 @@ async function writeImageFilesPromise(posts, config) {
 	// collect image data from all posts into a single flattened array of payloads
 	let skipCount = 0;
 	let delay = 0;
-	const payloads = posts.flatMap(post => {
+	const payloads = await Promise.all(posts.map(async post => {
 		const postPath = getPostPath(post, config);
 		const imagesDir = path.join(path.dirname(postPath), 'images');
-		return post.meta.imageUrls.flatMap(imageUrl => {
+		const imageUrls = post.meta.imageUrls.flatMap(imageUrl => {
 			const filename = shared.getFilenameFromUrl(imageUrl);
 			const destinationPath = path.join(imagesDir, filename);
 			if (checkFile(destinationPath)) {
@@ -129,7 +130,25 @@ async function writeImageFilesPromise(posts, config) {
 				return [payload];
 			}
 		});
-	});
+
+		const thumbnailUrl = await utils.getPostThumbnailUrl(post);
+		if (thumbnailUrl) {
+			imageUrls.push(thumbnailUrl);
+		}
+
+		// coverImage
+		if (post.meta.coverImage) {
+			imageUrls.push(post.meta.coverImage);
+		}
+
+		// featuredImage
+		const featuredImage = await utils.getPostFeaturedImageUrl(post);
+		if (featuredImage) {
+			imageUrls.push(featuredImage);
+		}
+		
+		return imageUrls;
+	})).then(arrays => arrays.flat());
 
 	const remainingCount = payloads.length;
 	if (remainingCount + skipCount === 0) {
